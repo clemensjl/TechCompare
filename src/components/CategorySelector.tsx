@@ -1,5 +1,6 @@
 import React from "react";
 import { Category, CategoryConfig } from "../types";
+import { getProductsByCategory } from "../data/products";
 
 interface CategorySelectorProps {
   categories: CategoryConfig[];
@@ -7,41 +8,66 @@ interface CategorySelectorProps {
   onSelect: (category: Category) => void;
 }
 
+const ICON_PROPS = {
+  width: 22,
+  height: 22,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.5,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
 const CategoryIcon: React.FC<{ icon: string }> = ({ icon }) => {
   const icons: Record<string, React.ReactNode> = {
     smartphone: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-        <line x1="12" y1="18" x2="12" y2="18" strokeWidth="2" />
+      <svg {...ICON_PROPS}>
+        <rect x="6" y="2" width="12" height="20" rx="2" />
+        <line x1="10.5" y1="18.5" x2="13.5" y2="18.5" />
       </svg>
     ),
     tablet: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-        <line x1="12" y1="18" x2="12" y2="18" strokeWidth="2" />
+      <svg {...ICON_PROPS}>
+        <rect x="4" y="2" width="16" height="20" rx="2" />
+        <line x1="10.5" y1="18.5" x2="13.5" y2="18.5" />
       </svg>
     ),
     watch: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="7" />
-        <polyline points="12 9 12 12 13.5 13.5" />
-        <path d="M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83" />
+      <svg {...ICON_PROPS}>
+        <circle cx="12" cy="12" r="6" />
+        <polyline points="12 9.5 12 12 13.5 13.5" />
+        <path d="M15.9 17.6l-.3 3a1.6 1.6 0 0 1-1.6 1.4h-4a1.6 1.6 0 0 1-1.6-1.4l-.3-3M8.1 6.4l.3-3A1.6 1.6 0 0 1 10 2h4a1.6 1.6 0 0 1 1.6 1.4l.3 3" />
       </svg>
     ),
     laptop: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16" />
+      <svg {...ICON_PROPS}>
+        <rect x="4" y="5" width="16" height="11" rx="1.5" />
+        <path d="M2 19h20" />
       </svg>
     ),
     earbuds: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+      <svg {...ICON_PROPS}>
+        <path d="M4 17v-5a8 8 0 0 1 16 0v5" />
+        <path d="M20 18.5a2 2 0 0 1-2 2h-.5a1.5 1.5 0 0 1-1.5-1.5v-3a1.5 1.5 0 0 1 1.5-1.5H20zM4 18.5a2 2 0 0 0 2 2h.5A1.5 1.5 0 0 0 8 19v-3a1.5 1.5 0 0 0-1.5-1.5H4z" />
+      </svg>
+    ),
+    monitor: (
+      <svg {...ICON_PROPS}>
+        <rect x="2" y="4" width="20" height="13" rx="1.5" />
+        <path d="M8 21h8M12 17v4" />
+      </svg>
+    ),
+    smarthome: (
+      <svg {...ICON_PROPS}>
+        <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" />
+        <path d="M9.5 15a3.5 3.5 0 0 1 5 0M11.4 17.6a1 1 0 0 1 1.2 0" />
       </svg>
     ),
   };
 
-  return <>{icons[icon] || null}</>;
+  return <>{icons[icon] ?? null}</>;
 };
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({
@@ -53,33 +79,38 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
     <section className="step-section fade-in-up" aria-labelledby="category-heading">
       <div className="step-header">
         <h2 id="category-heading" className="step-title">
-          Choose a Category
+          What are you comparing?
         </h2>
         <p className="step-subtitle">
-          Select the type of product you want to compare
+          Pick a category to see every model we hold specifications for.
         </p>
       </div>
-      <div className="category-grid" role="listbox" aria-label="Product categories">
-        {categories.map((cat, index) => {
+
+      <div className="category-grid" role="group" aria-labelledby="category-heading">
+        {categories.map((cat) => {
           const isSelected = selected === cat.id;
+          const count = getProductsByCategory(cat.id).length;
           return (
             <button
               key={cat.id}
-              role="option"
-              aria-selected={isSelected}
-              className={`category-card ${isSelected ? "selected" : ""}`}
+              type="button"
+              aria-pressed={isSelected}
+              className={`category-card${isSelected ? " selected" : ""}`}
               onClick={() => onSelect(cat.id)}
-              style={{ animationDelay: `${index * 0.07}s` }}
             >
-              <div className="category-icon">
+              <span className="category-icon">
                 <CategoryIcon icon={cat.icon} />
-              </div>
-              <span className="category-label">{cat.label}</span>
+              </span>
+              <span className="category-text">
+                <span className="category-label">{cat.label}</span>
+                <span className="category-count">
+                  {count} models · {cat.specFields.length} specs
+                </span>
+              </span>
               {isSelected && (
                 <span className="category-check" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="8" fill="currentColor" opacity="0.15" />
-                    <path d="M4 8L6.5 10.5L12 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 8.5 6.5 12 13 4.5" />
                   </svg>
                 </span>
               )}

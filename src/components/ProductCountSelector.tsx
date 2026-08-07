@@ -6,9 +6,9 @@ interface ProductCountSelectorProps {
 }
 
 const counts = [
-  { value: 2, label: "2 Products", description: "Head-to-head comparison" },
-  { value: 3, label: "3 Products", description: "Three-way comparison" },
-  { value: 4, label: "4 Products", description: "Full market overview" },
+  { value: 2, label: "Two products", description: "Head to head, widest columns" },
+  { value: 3, label: "Three products", description: "The usual shortlist" },
+  { value: 4, label: "Four products", description: "Full field, scrolls sideways" },
 ];
 
 const ProductCountSelector: React.FC<ProductCountSelectorProps> = ({
@@ -19,34 +19,32 @@ const ProductCountSelector: React.FC<ProductCountSelectorProps> = ({
     <section className="step-section fade-in-up" aria-labelledby="count-heading">
       <div className="step-header">
         <h2 id="count-heading" className="step-title">
-          Number of Products
+          How many side by side?
         </h2>
         <p className="step-subtitle">
-          How many products would you like to compare?
+          Fewer columns means more room per specification. You can change this
+          later from the breadcrumb.
         </p>
       </div>
-      <div className="count-grid" role="listbox" aria-label="Number of products to compare">
-        {counts.map(({ value, label, description }, index) => {
+
+      <div className="count-grid" role="group" aria-labelledby="count-heading">
+        {counts.map(({ value, label, description }) => {
           const isSelected = selected === value;
           return (
             <button
               key={value}
-              role="option"
-              aria-selected={isSelected}
-              className={`count-card ${isSelected ? "selected" : ""}`}
+              type="button"
+              aria-pressed={isSelected}
+              className={`count-card${isSelected ? " selected" : ""}`}
               onClick={() => onSelect(value)}
-              style={{ animationDelay: `${index * 0.08}s` }}
             >
-              <div className="count-number" aria-hidden="true">
+              <span className="count-number" aria-hidden="true">
                 {value}
-              </div>
-              <div className="count-text">
+              </span>
+              <span className="count-text">
                 <span className="count-label">{label}</span>
                 <span className="count-description">{description}</span>
-              </div>
-              {isSelected && (
-                <div className="count-selected-indicator" aria-hidden="true" />
-              )}
+              </span>
             </button>
           );
         })}
