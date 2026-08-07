@@ -6,7 +6,7 @@ export type Category =
   | "Smart Watches"
   | "Laptops"
   | "Earbuds"
-  | "Gaming Phones"
+  | "Monitors"
   | "Smart Home";
 
 export type SpecValue = string | number | null;
