@@ -1,5 +1,6 @@
-import React from "react";
-import { Slot, Product, Category } from "../types";
+import React, { useCallback, useRef, useState } from "react";
+import { Category, Product, Slot } from "../types";
+import { brandColorVar } from "../utils/brand";
 import BrandModelPicker from "./BrandModelPicker";
 
 interface ProductSlotsProps {
@@ -9,151 +10,122 @@ interface ProductSlotsProps {
   onProductRemove: (slotId: number) => void;
 }
 
-const BrandBadge: React.FC<{ brand: string }> = ({ brand }) => {
-  const colors: Record<string, string> = {
-    Apple: "#555",
-    Google: "#4285F4",
-    Samsung: "#1428A0",
-    Xiaomi: "#FF6900",
-  };
-  return (
-    <span
-      className="brand-badge"
-      style={{ backgroundColor: colors[brand] || "#888" }}
-      aria-label={`Brand: ${brand}`}
-    >
-      {brand}
-    </span>
-  );
-};
-
 const ProductSlots: React.FC<ProductSlotsProps> = ({
   slots,
   category,
   onProductSelect,
   onProductRemove,
 }) => {
-  const [activeSlot, setActiveSlot] = React.useState<number | null>(null);
+  const [activeSlot, setActiveSlot] = useState<number | null>(null);
+  // Focus has to come back to the control that opened the dialog (WCAG 2.4.3).
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   const filledProductIds = slots
     .filter((s) => s.product !== null)
     .map((s) => s.product!.id);
 
-  const handleSlotClick = (slotId: number) => {
-    setActiveSlot(slotId);
-  };
+  const openPicker = useCallback(
+    (slotId: number, event: React.MouseEvent<HTMLButtonElement>) => {
+      triggerRef.current = event.currentTarget;
+      setActiveSlot(slotId);
+    },
+    []
+  );
 
-  const handlePickerClose = () => {
+  const closePicker = useCallback(() => {
     setActiveSlot(null);
-  };
+    triggerRef.current?.focus();
+    triggerRef.current = null;
+  }, []);
 
-  const handleProductSelect = (product: Product) => {
-    if (activeSlot !== null) {
-      onProductSelect(activeSlot, product);
+  const handleProductSelect = useCallback(
+    (product: Product) => {
+      if (activeSlot !== null) onProductSelect(activeSlot, product);
       setActiveSlot(null);
-    }
-  };
+      triggerRef.current?.focus();
+      triggerRef.current = null;
+    },
+    [activeSlot, onProductSelect]
+  );
+
+  const filledCount = filledProductIds.length;
 
   return (
     <>
-      <section
-        className="step-section fade-in-up"
-        aria-labelledby="slots-heading"
-      >
+      <section className="step-section fade-in-up" aria-labelledby="slots-heading">
         <div className="step-header">
           <h2 id="slots-heading" className="step-title">
-            Select Products
+            Fill the slots
           </h2>
           <p className="step-subtitle">
-            Click each slot to choose a product for comparison
+            Choose a {category.toLowerCase()} model for each slot. The comparison
+            appears once two slots are filled.
           </p>
         </div>
 
         <div
           className="slots-grid"
-          style={{
-            gridTemplateColumns: `repeat(${slots.length}, 1fr)`,
-          }}
+          style={{ gridTemplateColumns: `repeat(${slots.length}, minmax(0, 1fr))` }}
           role="group"
-          aria-label="Product comparison slots"
+          aria-labelledby="slots-heading"
         >
           {slots.map((slot, index) => {
-            const isEmpty = slot.product === null;
+            const product = slot.product;
             return (
               <div
                 key={slot.id}
-                className={`slot-card ${isEmpty ? "empty" : "filled"}`}
-                style={{ animationDelay: `${index * 0.08}s` }}
+                className={`slot-card ${product ? "filled" : "empty"}`}
               >
-                {isEmpty ? (
+                {!product ? (
                   <button
+                    type="button"
                     className="slot-empty-btn"
-                    onClick={() => handleSlotClick(slot.id)}
-                    aria-label={`Slot ${index + 1}: Click to select a product`}
+                    onClick={(e) => openPicker(slot.id, e)}
                   >
-                    <div className="slot-empty-icon" aria-hidden="true">
-                      <svg
-                        width="32"
-                        height="32"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="12" cy="12" r="10" strokeDasharray="4 2" />
-                        <line x1="12" y1="8" x2="12" y2="16" />
-                        <line x1="8" y1="12" x2="16" y2="12" />
+                    <span className="slot-empty-icon" aria-hidden="true">
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                        <path d="M12 5v14M5 12h14" />
                       </svg>
-                    </div>
-                    <span className="slot-empty-label">Add Product</span>
+                    </span>
+                    <span className="slot-empty-label">Add product</span>
                     <span className="slot-number">Slot {index + 1}</span>
                   </button>
                 ) : (
-                  <div className="slot-filled-content" aria-label={`Slot ${index + 1}: ${slot.product!.name}`}>
+                  <div className="slot-filled-content">
                     <button
+                      type="button"
                       className="slot-remove-btn"
                       onClick={() => onProductRemove(slot.id)}
-                      aria-label={`Remove ${slot.product!.name} from slot ${index + 1}`}
+                      aria-label={`Remove ${product.name} from slot ${index + 1}`}
                     >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                        <path d="M18 6 6 18M6 6l12 12" />
                       </svg>
                     </button>
-                    <div className="slot-product-icon" aria-hidden="true">
-                      <svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                        <line x1="12" y1="18" x2="12" y2="18" strokeWidth="2" />
-                      </svg>
-                    </div>
-                    <BrandBadge brand={slot.product!.brand} />
-                    <h3 className="slot-product-name">{slot.product!.name}</h3>
-                    <span className="slot-product-year">{slot.product!.year}</span>
+
+                    <span
+                      className="brand-badge"
+                      style={{ color: brandColorVar(product.brand) }}
+                    >
+                      <span
+                        className="brand-dot"
+                        style={{ background: "currentColor" }}
+                        aria-hidden="true"
+                      />
+                      {product.brand}
+                    </span>
+
+                    <h3 className="slot-product-name">{product.name}</h3>
+                    <span className="slot-product-meta">
+                      {product.year}
+                      {product.specs.price ? ` · ${product.specs.price}` : ""}
+                    </span>
+
                     <button
+                      type="button"
                       className="slot-change-btn"
-                      onClick={() => handleSlotClick(slot.id)}
-                      aria-label={`Change product in slot ${index + 1}`}
+                      onClick={(e) => openPicker(slot.id, e)}
+                      aria-label={`Change the product in slot ${index + 1}, currently ${product.name}`}
                     >
                       Change
                     </button>
@@ -164,18 +136,20 @@ const ProductSlots: React.FC<ProductSlotsProps> = ({
           })}
         </div>
 
-        {filledProductIds.length < 2 && (
-          <p className="slots-hint" role="status" aria-live="polite">
-            Fill at least 2 slots to see the comparison table below
-          </p>
-        )}
+        {/* One small live region, so a change announces a sentence rather than
+            the whole comparison table. */}
+        <p className="slots-hint" role="status">
+          {filledCount < 2
+            ? `${filledCount} of ${slots.length} slots filled. Fill at least two to compare.`
+            : `${filledCount} of ${slots.length} slots filled. Comparison is below.`}
+        </p>
       </section>
 
       {activeSlot !== null && (
         <BrandModelPicker
           category={category}
           onSelect={handleProductSelect}
-          onClose={handlePickerClose}
+          onClose={closePicker}
           existingProductIds={filledProductIds}
         />
       )}
