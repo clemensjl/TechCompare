@@ -1,0 +1,21 @@
+name: Bug report
+description: Something in the app does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Browser and device
+      placeholder: Firefox 140 on Android 15
+  - type: input
+    id: url
+    attributes:
+      label: Page or product
+      description: Category and products you were comparing, if relevant
