@@ -1,0 +1,11 @@
+name: Feature or product request
+description: Suggest a feature, a new product or a spec correction
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should change
+      description: For a spec correction or new product, include a link to the manufacturer's spec page.
+    validations:
+      required: true
